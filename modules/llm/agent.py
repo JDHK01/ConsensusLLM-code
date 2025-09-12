@@ -25,31 +25,32 @@ THE SOFTWARE.
 
 import re
 from .gpt import GPT
+from .deepseek import DeepSeek
 from ..prompt.summarize import summarizer_role
 from ..prompt.form import summarizer_output_form
 
-class Agent(GPT):
+class Agent(DeepSeek):
     """
     A class representing an agent with position control.
 
     Args:
         position (float): Current position of the agent.
         other_position (list of float): Positions of other agents.
-        key (str): API key for the GPT model.
+        key (str): API key for the DeepSeek model.
         name (str): Name of the agent (optional).
-        model (str): GPT model name (default is 'gpt-3.5-turbo-0613').
+        model (str): DeepSeek model name (default is 'deepseek-chat').
         temperature (float): 
-            GPT temperature for text generation (default is 0.7).
+            DeepSeek temperature for text generation (default is 0.7).
     """
     def __init__(self, position, other_position, key: str, name=None, 
-                 model: str = 'gpt-3.5-turbo-0613', temperature: float = 0.7):
+                 model: str = 'deepseek-chat', temperature: float = 0.7):
         super().__init__(key=key, model=model, temperature=temperature)
         self._name = name
         self._position = position  # Current position of the agent
         self._other_position = other_position  # Positions of other agents
         self._trajectory = [self.position]  # Record the agent's movement trajectory
-        self._summarizer = GPT(key=key, model="gpt-3.5-turbo-0613", 
-                               keep_memory=False)
+        self._summarizer = DeepSeek(key=key, model="deepseek-chat", 
+                                    keep_memory=False)
         self._summarize_result = ""
         self._summarizer_descriptions = summarizer_output_form
         self._summarizer.memories_update(role='system', content=summarizer_role)
@@ -80,7 +81,7 @@ class Agent(GPT):
 
     def answer(self, input, idx, round, simulation_ind, try_times=0) -> tuple:
         """
-        Generate an answer using the GPT model.
+        Generate an answer using the DeepSeek model.
 
         Args:
             input (str): Input text or prompt.

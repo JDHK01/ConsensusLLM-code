@@ -26,27 +26,28 @@ THE SOFTWARE.
 import re
 import numpy as np
 from .gpt import GPT
+from .deepseek import DeepSeek
 from ..prompt.summarize import summarizer_role
 from ..prompt.form import summarizer_output_form
 
-class Agent2D(GPT):
+class Agent2D(DeepSeek):
     """
     A class representing a 2D agent with position control.
 
     Args:
         position (tuple): Current position of the agent (x, y).
         other_position (list of tuples): Positions of other agents.
-        key (str): API key for the GPT model.
+        key (str): API key for the DeepSeek model.
         name (str): Name of the agent (optional).
-        model (str): GPT model name (default is 'gpt-3.5-turbo-0613').
+        model (str): DeepSeek model name (default is 'deepseek-chat').
         temperature (float): 
-            GPT temperature for text generation (default is 0.7).
+            DeepSeek temperature for text generation (default is 0.7).
         keep_memory (bool): 
             Whether to keep a memory of conversations (default is False).
     """
     
     def __init__(self, position, other_position, key: str, name=None,
-                 model: str = 'gpt-3.5-turbo-0613', temperature: float = 0.7, 
+                 model: str = 'deepseek-chat', temperature: float = 0.7, 
                  keep_memory=False):
         super().__init__(key=key, model=model, temperature=temperature, 
                          keep_memory=keep_memory)
@@ -67,8 +68,8 @@ class Agent2D(GPT):
         self._other_position = other_position  # Positions of other agents
         self._trajectory = []  # Record the agent's movement trajectory
         self._target_trajectory = []  # Record the agent's target trajectory
-        self._summarizer = GPT(key=key, model="gpt-3.5-turbo-0613", 
-                               keep_memory=False)
+        self._summarizer = DeepSeek(key=key, model="deepseek-chat", 
+                                    keep_memory=False)
         self._summarize_result = ""
         self._summarizer_descriptions = summarizer_output_form
         self._summarizer.memories_update(role='system', content=summarizer_role)
@@ -111,7 +112,7 @@ class Agent2D(GPT):
 
     def answer(self, input, idx, round, simulation_ind, try_times=0) -> tuple:
         """
-        Generate an answer using the GPT model.
+        Generate an answer using the DeepSeek model.
 
         Args:
             input (str): Input text or prompt.

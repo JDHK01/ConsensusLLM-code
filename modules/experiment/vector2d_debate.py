@@ -117,7 +117,7 @@ class Vector2dDebate(Template):
             agent = Agent2D(position=tuple(position[idx]),
                             other_position=position_others,
                             key=api_keys[simulation_ind * self._n_agents + idx],
-                            model="gpt-3.5-turbo-0613",
+                            model="deepseek-chat",
                             name=names[idx])
             # add personality, neutral by default
             personality = ""

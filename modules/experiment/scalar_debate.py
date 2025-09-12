@@ -26,7 +26,7 @@ THE SOFTWARE.
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .template import Template
-from ..llm.agent import Agent, GPT
+from ..llm.agent import Agent
 from ..llm.api_key import api_keys
 from ..llm.role import names
 from ..prompt.scenario import agent_role, game_description, round_description
@@ -98,7 +98,7 @@ class ScalarDebate(Template):
             agent = Agent(position=position[idx],
                           other_position=position_others,
                           key=api_keys[simulation_ind * self._n_agents + idx],
-                          model="gpt-3.5-turbo-0613",
+                          model="deepseek-chat",
                           name=names[idx])
 
             # Add personality, neutral by default
