@@ -23,7 +23,7 @@ OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE, OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import openai
+from openai import OpenAI
 
 class DeepSeek:
     """
@@ -32,8 +32,8 @@ class DeepSeek:
     output.
     """
 
-    def __init__(self, key: str, model: str = 'deepseek-chat',
-                 temperature: float = 0.7, keep_memory: bool = True):
+    def __init__(self, key: str, model: str = 'deepseek-chat',system_message: str = None,
+                 temperature: float = 0.7, keep_memory: bool = True, ):
         """
         Initialize the DeepSeek class.
 
@@ -43,13 +43,25 @@ class DeepSeek:
             temperature (float): Temperature for text generation (default: 0.7).
             keep_memory (bool): Whether to retain memories (default: True).
         """
+        # 模型的参数信息:
+        self._key = key
         self._model = model
-        self._api_key = key
-        self._cost = 0
-        self._memories = []
-        self._keep_memory = keep_memory
         self._temperature = temperature
-        self._history = []
+        self._memories = [] # 让模型看的记忆
+
+        self._keep_memory = keep_memory # 控制是否维持记忆
+        self._history = [] # 让人看的记忆
+        self._cost = 0
+
+        # 新版客户端
+        self._client = OpenAI(
+            api_key=key,
+            base_url="https://api.deepseek.com"
+        )
+
+        # 加入系统信息
+        if system_message:
+            self.memories_update(role="system", content=system_message)
 
     def get_memories(self):
         """
@@ -69,10 +81,38 @@ class DeepSeek:
         """
         return self._history
 
+    def get_keep_memory(self):
+        """
+        得到模型参数: 是否保存历史消息
+
+        Returns:
+            bool: 是否保存消息的布尔值
+        """
+        return self._keep_memory
+
+    def set_keep_memory(self, arg = None):
+        """
+        设置模型参数: 是否保持布尔值
+
+        Args:
+            arg(any): 任意值。如果是布尔值会将`self_keep_memory`取反,
+                    否则区反
+        """
+        if isinstance(arg, bool):
+            self._keep_memory = arg
+        else:
+            self._keep_memory = not self._keep_memory
+
     def memories_update(self, role: str, content: str):
         """
         Update memories to set roles (system, user, assistant) and content,
         forming a complete memory.
+        `self.memories`的格式
+        eg. [{'role': 'system', 'content': '你是一个复读机'},\n
+             {'role': 'user', 'content': '请你记住“制图之体有六，缺一不可言精”'},\n
+             {'role': 'assistant', 'content': '制图六体，缺一不可。'},\n
+             {'role': 'user', 'content': '制图之体有六下一句是什么, 回答不超过10个字'},\n
+             {'role': 'assistant', 'content': '文成规矩，随变而立功'}]
 
         Args:
             role (str): Role (system, user, assistant).
@@ -124,19 +164,20 @@ class DeepSeek:
             if self._memories[-1]["role"] == "assistant":
                 self._memories = self._memories[:-1]
 
-        openai.api_key = self._api_key
-
         try:
-            response = openai.ChatCompletion.create(
+            response = self._client.chat.completions.create(
                 model=self._model,
                 messages=self._memories,
                 temperature=self._temperature,
                 **kwargs
             )
-            self._cost += response['usage']["total_tokens"]
-            content = response['choices'][0]['message']['content']
+            # 取出回复的内容
+            self._cost += response.usage.total_tokens
+            content = response.choices[0].message.content
+
             self._memories.append({"role": "assistant", "content": content})
             self._history.append({"role": "assistant", "content": content})
+
             return content
         except Exception as e:
             raise ConnectionError(f"Error in generate_answer: {e}")
