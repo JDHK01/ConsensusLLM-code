@@ -27,22 +27,48 @@ import openai
 import math
 import yaml
 
-# Load the configuration from the YAML file
-with open('./config/keys.yml', 'r') as config_file:
-    config = yaml.safe_load(config_file)
 
+# 获取当前脚本的绝对路径
+import os
+project_root = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))
+    )
+)
+
+# Load the configuration from the YAML file(更改为绝对路径导入)
+with open(f'{project_root}/config/keys.yml', 'r') as config_file:
+    # 读取为字典
+    config = yaml.safe_load(config_file)
 openai.api_base = config.get('api_base', '')
 api_keys_all = config.get('api_keys', {})
 # User ID for which we need to slice the dictionary.
 user_id = 2
 # Total number of users among whom the dictionary needs to be distributed.
 user_count = 3
-
 # Calculate the number of keys each user should get.
-keys_per_user = math.ceil(len(api_keys_all) / user_count)
+keys_per_user = math.floor(len(api_keys_all) / user_count)# 向上取整
 
 # Calculate the starting and ending index for slicing the dictionary 
 # for the given user_id.
+'''
+eg.
+    user_count = 3
+    api_keys_all = 28
+    keys_per_user = math.ceil(28 / 3) = 10
+        如果`user_id 是 0`
+            start = 10 * 0 = 0
+            end = min(10, 28) = 10
+            获得 0- 9的api-key
+        如果`user_id 是 1`
+            start = 10 * 1 = 10
+            end = min(20, 28) = 20
+            获得10-19的api-key
+        如果`usr_id 是 2`
+            start = 10 * 2 = 20
+            end = min(30, 28) = 28
+            获得20-27的api-key
+'''
 start = keys_per_user * user_id
 end = min(keys_per_user * (user_id + 1), len(api_keys_all))
 print("user {}/{} ,api_key index start: {}, end: {}"
@@ -51,5 +77,6 @@ print("user {}/{} ,api_key index start: {}, end: {}"
 api_keys = {i - start: v 
             for i, (k, v) in enumerate(api_keys_all.items()) 
             if start <= i < end}
+
 if __name__ == '__main__':
     print(api_keys)

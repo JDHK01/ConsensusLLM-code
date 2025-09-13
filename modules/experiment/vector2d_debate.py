@@ -109,8 +109,18 @@ class Vector2dDebate(Template):
             List of Agent2D instances.
         """
         agents = []
-        position = (np.array([[20, 20], [80, 20], [50, 80]]) 
-                    + np.random.randint(-10, 10, size=(self._n_agents, 2)))
+        # Generate initial positions based on number of agents
+        base_positions = np.array([[20, 20], [80, 20], [50, 80]])
+        if self._n_agents <= len(base_positions):
+            # Use subset of base positions
+            position = (base_positions[:self._n_agents] 
+                       + np.random.randint(-10, 10, size=(self._n_agents, 2)))
+        else:
+            # Generate additional random positions if more agents needed
+            extra_positions = np.random.randint(10, 90, size=(self._n_agents - len(base_positions), 2))
+            all_positions = np.vstack([base_positions, extra_positions])
+            position = (all_positions 
+                       + np.random.randint(-10, 10, size=(self._n_agents, 2)))
 
         for idx in range(self._n_agents):
             position_others = [(x, y) for x, y in position[self._m[idx, :]]]
