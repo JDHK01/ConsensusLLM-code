@@ -168,6 +168,10 @@ class Agent(UnifiedLLM):
     def other_position(self):
         return self._other_position
 
+    @other_position.setter
+    def position(self, value):
+        self._other_position = value
+
     @property
     def trajectory(self):
         return self._trajectory
