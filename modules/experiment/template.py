@@ -74,6 +74,7 @@ class Template(ABC):
         self._n_agent = args.agents  # Number of agents
         self._n_round = args.rounds  # Number of rounds
         self._n_experiment = args.n_exp  # Number of experiments
+        self._random_agent = args.random_agent  # Random agent selection
         self._lock = threading.Lock()  # Lock for thread safety
 
     @abstractmethod
@@ -165,7 +166,7 @@ class Template(ABC):
             simulation_ind: Index of the current simulation.
             progress: Progress bar for tracking the simulation's progress.
         """
-        agents = self._generate_agents(simulation_ind, random_agent=True)
+        agents = self._generate_agents(simulation_ind, random_agent=self._random_agent)
         try:
             for round in range(self._n_round):
                 results = queue.Queue()
