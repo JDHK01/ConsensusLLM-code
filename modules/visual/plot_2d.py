@@ -60,8 +60,27 @@ def plot_xy(data_path):
         data_path (str): The path to the data file containing trajectory data.
     """
     data = read_from_file(data_path)
-    all_positions = np.array(data['pos'][0])
-    all_targets = np.array(data['target'][0])
+
+    # Check if data exists and has the expected structure
+    if 'pos' not in data or 'target' not in data:
+        print("Warning: Missing 'pos' or 'target' data in trajectory file")
+        return
+
+    if len(data['pos']) == 0 or len(data['target']) == 0:
+        print("Warning: Empty trajectory data")
+        return
+
+    # Get first available simulation data
+    sim_indices = list(data['pos'].keys())
+    if not sim_indices:
+        print("Warning: No simulation data found")
+        return
+
+    first_sim_idx = sim_indices[0]
+    print(f"Plotting data from simulation index: {first_sim_idx}")
+
+    all_positions = np.array(data['pos'][first_sim_idx])
+    all_targets = np.array(data['target'][first_sim_idx])
 
     num_robots, num_points, _ = all_positions.shape
     num_targets = all_targets.shape[1]
@@ -103,20 +122,39 @@ def video(data_path):
         data_path (str): The path to the data file containing trajectory data.
     """
     data = read_from_file(data_path)
+
+    # Check if data exists and has the expected structure
+    if 'pos' not in data or 'target' not in data:
+        print("Warning: Missing 'pos' or 'target' data in trajectory file for video")
+        return
+
+    if len(data['pos']) == 0 or len(data['target']) == 0:
+        print("Warning: Empty trajectory data for video")
+        return
+
+    # Get first available simulation data
+    sim_indices = list(data['pos'].keys())
+    if not sim_indices:
+        print("Warning: No simulation data found for video")
+        return
+
+    first_sim_idx = sim_indices[0]
+    print(f"Creating video from simulation index: {first_sim_idx}")
+
     fig, ax = plt.subplots(figsize=(8, 4))
     lines = []
     dashed_lines = []
     scatters = []
     start_scatters = []
 
-    for idx in range(len(data['pos'][0])):
+    for idx in range(len(data['pos'][first_sim_idx])):
         line, = ax.plot([], [], lw=2, color=colors[idx], 
                         label=f'Robot {idx + 1} trajectory')
         dashed_line, = ax.plot([], [], lw=2, linestyle='--', 
                                alpha=0.5, color=colors[idx])
         scatter = ax.scatter([], [], marker='o', 
                              c=colors[idx].reshape(1, -1), s=50)
-        start_pos = data['pos'][0][idx][0]
+        start_pos = data['pos'][first_sim_idx][idx][0]
         start_scatter = ax.scatter(start_pos[0], start_pos[1], alpha=0.5, 
                                    c=colors[idx].reshape(1, -1), s=100,
                                    marker='o', 
@@ -125,10 +163,10 @@ def video(data_path):
         dashed_lines.append(dashed_line)
         scatters.append(scatter)
         start_scatters.append(start_scatter)
-    mean_start_x = np.array([data['pos'][0][idx][0][0]
-                             for idx in range(len(data['pos'][0]))]).mean()
-    mean_start_y = np.array([data['pos'][0][idx][0][1] 
-                             for idx in range(len(data['pos'][0]))]).mean()
+    mean_start_x = np.array([data['pos'][first_sim_idx][idx][0][0]
+                             for idx in range(len(data['pos'][first_sim_idx]))]).mean()
+    mean_start_y = np.array([data['pos'][first_sim_idx][idx][0][1]
+                             for idx in range(len(data['pos'][first_sim_idx]))]).mean()
     mean_start_scatter = ax.scatter([], [], c=colors[-1].reshape(1, -1), 
                                     marker='$*$', s=100, 
                                     label="Average initial position")
@@ -157,18 +195,18 @@ def video(data_path):
                           [y for x, y in all_positions[:i + 1]])
             target_key = max(0, i - 20) // 20
             start_x, start_y = all_positions[i]
-            target_x, target_y = data['target'][0][idx][target_key]
+            target_x, target_y = data['target'][first_sim_idx][idx][target_key]
             dashed_line.set_data([start_x, target_x], [start_y, target_y])
             scatter.set_offsets([start_x, start_y])
 
-        if i == len(data['pos'][0][0]) - 1:
+        if i == len(data['pos'][first_sim_idx][0]) - 1:
             img_output_path = os.path.join(os.path.dirname(data_path), 
                                            'last_frame.svg')
             plt.savefig(img_output_path, bbox_inches='tight')
         return lines + dashed_lines + scatters
 
     output_path = os.path.join(os.path.dirname(data_path), 'animation.gif')
-    ani = FuncAnimation(fig, animate, frames=len(data['pos'][0][0]), 
+    ani = FuncAnimation(fig, animate, frames=len(data['pos'][first_sim_idx][0]), 
                         init_func=init, blit=False)
     ani.save(output_path, fps=20)
     plt.show()

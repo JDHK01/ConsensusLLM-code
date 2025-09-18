@@ -28,13 +28,15 @@ import pickle
 
 from .template import Template
 from ..llm.agent_2d import Agent2D
-from ..llm.api_key import api_keys
+# from ..llm.api_key import api_keys
 from ..llm.role import names
 from ..prompt.form import agent_output_form
 from ..prompt.personality import stubborn, suggestible
 from ..prompt.scenario_2d import agent_role, game_description, round_description
 from ..visual.gen_html import gen_html
 from ..visual.plot_2d import plot_xy, video
+
+from ..mine import *
 
 class Vector2dDebate(Template):
     """
@@ -89,9 +91,10 @@ class Vector2dDebate(Template):
         if args.n_stubborn + args.n_suggestible > self._n_agents:
             raise ValueError("stubborn + suggestible agents is more than "
                              f"{self._n_agents}")
-        if len(api_keys) < self._n_agents * args.n_exp:
-            raise ValueError("api_keys are not enough for "
-                             f"{self._n_agents} agents")
+        # 注释掉原来的检查，因为现在使用统一的API key管理
+        # if len(api_keys) < self._n_agents * args.n_exp:
+        #     raise ValueError("api_keys are not enough for "
+        #                      f"{self._n_agents} agents")
         if self._m.shape[0] != self._m.shape[1]:
             raise ValueError("connectivity_matrix is not a square matrix, "
                              f"shape: {self._m.shape}")
@@ -99,11 +102,12 @@ class Vector2dDebate(Template):
             raise ValueError("connectivity_matrix is not enough for "
                              f"{self._n_agents} agents, shape: {self._m.shape}")
 
-    def _generate_agents(self, simulation_ind):
+    def _generate_agents(self, simulation_ind, random_agent: bool = False):
         """Generate agent instances for the simulation.
 
         Args:
             simulation_ind: Index of the simulation.
+            random_agent: If True, randomly select LLM providers
 
         Returns:
             List of Agent2D instances.
@@ -124,19 +128,57 @@ class Vector2dDebate(Template):
 
         for idx in range(self._n_agents):
             position_others = [(x, y) for x, y in position[self._m[idx, :]]]
-            agent = Agent2D(position=tuple(position[idx]),
-                            other_position=position_others,
-                            key=api_keys[simulation_ind * self._n_agents + idx],
-                            model="deepseek-chat",
-                            name=names[idx])
-            # add personality, neutral by default
+
+            # 智能选择API key，避免索引超出范围
+            key_index = (simulation_ind * self._n_agents + idx) % len(tongyi_api_keys)
+
+            if not random_agent:
+                agent = Agent2D.create_tongyi_agent(
+                    position=tuple(position[idx]),
+                    other_position=position_others,
+                    key=tongyi_api_keys[key_index],
+                    model="qwen-turbo",
+                    name=names[idx]
+                )
+            else:
+                # 随机模式：随机选择LLM提供商
+                provider_choice = np.random.randint(0, 2)
+
+                if provider_choice == 0:  # 通义千问
+                    key_index = (simulation_ind * self._n_agents + idx) % len(tongyi_api_keys)
+                    agent = Agent2D.create_tongyi_agent(
+                        position=tuple(position[idx]),
+                        other_position=position_others,
+                        key=tongyi_api_keys[key_index],
+                        model="qwen-turbo",
+                        name=names[idx] + "(Tongyi)"
+                    )
+                elif provider_choice == 1:  # DeepSeek
+                    key_index = (simulation_ind * self._n_agents + idx) % len(deepseek_api_keys)
+                    agent = Agent2D.create_deepseek_agent(
+                        position=tuple(position[idx]),
+                        other_position=position_others,
+                        key=deepseek_api_keys[key_index],
+                        model="deepseek-chat",
+                        name=names[idx] + "(DeepSeek)"
+                    )
+                else:  # Kimi
+                    key_index = (simulation_ind * self._n_agents + idx) % len(kimi_api_keys)
+                    agent = Agent2D.create_kimi_agent(
+                        position=tuple(position[idx]),
+                        other_position=position_others,
+                        key=kimi_api_keys[key_index],
+                        model="moonshot-v1-8k",
+                        name=names[idx] + "(Kimi)"
+                    )
+            # Add personality, neutral by default
             personality = ""
             if idx < self._n_stubborn:
                 personality = stubborn
-            elif (self._n_stubborn <= idx 
+            elif (self._n_stubborn <= idx
                   < self._n_stubborn + self._n_suggestible):
                 personality = suggestible
-            agent.memories_update(role='system', 
+            agent.memories_update(role='system',
                                   content=agent_role + personality)
             agents.append(agent)
         self._positions[simulation_ind] = position

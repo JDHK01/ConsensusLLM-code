@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python:*)",
-      "Bash(/opt/anaconda3/envs/ConsensusSeeking/bin/python:*)"
+      "Bash(/opt/anaconda3/envs/ConsensusSeeking/bin/python:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
