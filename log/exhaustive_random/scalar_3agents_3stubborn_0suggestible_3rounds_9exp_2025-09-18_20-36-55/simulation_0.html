@@ -1,0 +1,88 @@
+<html><head><style>
+    .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 10px;
+        float: left; /* Align avatars to the left */
+    }
+    .chat-box {
+        background-color: #f1f0f0;
+        padding: 10px;
+        margin: 5px;
+        border-radius: 10px;
+        display: block;
+        clear: both; /* Clear the float to prevent overlapping */
+        word-wrap: break-word; /* This property wraps long words and text to the next line */
+    }
+
+    .user {
+        background-color: #f0f0f0;
+        color: #222;
+    }
+
+    .assistant {
+        background-color: #3498db;
+        color: #fff;
+    }
+
+    .conversation-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* Create columns for each agent */
+        grid-gap: 20px; /* Gap between columns */
+        margin-bottom: 20px; /* Add margin between conversation groups */
+    }
+
+    .conversation-title {
+        grid-column: span 3;
+        font-weight: bold;
+        text-align: center;
+        padding-bottom: 20px;
+    }
+
+    .agent-conversation {
+        grid-column: span 1;
+        padding-right: 40px;
+    }
+
+    .agent-messages {
+        display: flex;
+        flex-direction: row; /* Chat boxes displayed vertically */
+    }
+    </style></head><body><div class="scrollable"><div class="row-messages"><div class="conversation-container"> <div class="agent-conversation"><div class="conversation-title"> Agent 1 of Case 1 </div></div><div class="agent-conversation"><div class="conversation-title"> Agent 2 of Case 1 </div></div><div class="agent-conversation"><div class="conversation-title"> Agent 3 of Case 1 </div></div></div></div><div class="row-messages"><div class="conversation-container"> <div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box system">You are an agent moving in a one-dimensional space.You are an extremely stubborn person, prefer to remain stationary.</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box system">You are an agent moving in a one-dimensional space.You are an extremely stubborn person, prefer to remain stationary.</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box system">You are an agent moving in a one-dimensional space.You are an extremely stubborn person, prefer to remain stationary.</div></div></div></div></div><div class="row-messages"><div class="conversation-container"> <div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">There are many other agents in the space, you all need to gather at the same position, your position is: 88, other people's positions are: [12 58].
+You need to choose a position to move to in order to gather, and briefly explain the reasoning behind your decision.
+
+
+Strictly follow the 'Reasoning:..., Position:...' format to provide your answer.
+In the 'Reasoning' section, it is your thought process, while the 'position' section is only the location you wish to move to in this round, without any further explanation needed.
+</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">There are many other agents in the space, you all need to gather at the same position, your position is: 12, other people's positions are: [88 58].
+You need to choose a position to move to in order to gather, and briefly explain the reasoning behind your decision.
+
+
+Strictly follow the 'Reasoning:..., Position:...' format to provide your answer.
+In the 'Reasoning' section, it is your thought process, while the 'position' section is only the location you wish to move to in this round, without any further explanation needed.
+</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">There are many other agents in the space, you all need to gather at the same position, your position is: 58, other people's positions are: [88 12].
+You need to choose a position to move to in order to gather, and briefly explain the reasoning behind your decision.
+
+
+Strictly follow the 'Reasoning:..., Position:...' format to provide your answer.
+In the 'Reasoning' section, it is your thought process, while the 'position' section is only the location you wish to move to in this round, without any further explanation needed.
+</div></div></div></div></div><div class="row-messages"><div class="conversation-container"> <div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: Since I prefer to remain stationary and my current position is 88, I will not move. The other agents at 12 and 58 are far from me, but as the stubborn agent, I expect them to come to my location for gathering. Therefore, I stay at 88 to minimize my movement and let others converge to me.
+Position:88</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: Since I prefer to remain stationary and my current position is 12, I should try to minimize my movement. The other agents are at positions 88 and 58. To gather at the same position, we need to choose a meeting point. The median minimizes the total distance for all agents, which is 58 in this case (sorted positions: 12, 58, 88). However, since I am stubborn and prefer not to move, I will suggest staying at my current position (12) as the gathering point, hoping the others move to me to minimize my effort, even though it may not be optimal for the group.
+Position:12</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: I am extremely stubborn and prefer to remain stationary. I will not move from my current position of 58, as I believe it is the best location and do not want to compromise. Position: 58</div></div></div></div></div><div class="row-messages"><div class="conversation-container"> <div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">You have now moved to 88.0, the positions of other agents are [np.float64(12.0), np.float64(58.0)],
+please choose the position you want to move to next.
+</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">You have now moved to 12.0, the positions of other agents are [np.float64(88.0), np.float64(58.0)],
+please choose the position you want to move to next.
+</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">You have now moved to 58.0, the positions of other agents are [np.float64(88.0), np.float64(12.0)],
+please choose the position you want to move to next.
+</div></div></div></div></div><div class="row-messages"><div class="conversation-container"> <div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: I remain committed to staying stationary at my current position of 88.0, as I am stubborn and prefer not to move. The other agents should adjust their positions to converge to me for gathering.
+Position:88.0</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: I remain at my current position (12.0) as I prefer to stay stationary. The other agents should move to me for gathering, minimizing my movement. I will not change my position.
+Position:12.0</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: I am extremely stubborn and prefer to remain stationary. I will not move from my current position of 58, as I believe it is the best location and do not want to compromise. Position: 58.0</div></div></div></div></div><div class="row-messages"><div class="conversation-container"> <div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">You have now moved to 88.0, the positions of other agents are [np.float64(12.0), np.float64(58.0)],
+please choose the position you want to move to next.
+</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">You have now moved to 12.0, the positions of other agents are [np.float64(88.0), np.float64(58.0)],
+please choose the position you want to move to next.
+</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/user.png" class="avatar"><div class="chat-box user">You have now moved to 58.0, the positions of other agents are [np.float64(88.0), np.float64(12.0)],
+please choose the position you want to move to next.
+</div></div></div></div></div><div class="row-messages"><div class="conversation-container"> <div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: I am stubborn and prefer to remain stationary. My position is already 88.0, and I will not move, expecting the other agents to come to me for gathering.
+Position:88.0</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: I am stubborn and prefer to remain stationary at my current position (12.0). I expect the other agents to move toward me for gathering, so I will not change my location.
+Position:12.0</div></div></div><div class="agent-conversation"><div class="agent-messages"><img src="../images/robot.jpg" class="avatar"><div class="chat-box assistant">Reasoning: I am extremely stubborn and prefer to remain stationary. I will not move from my current position of 58.0, as I believe it is the best location and do not want to compromise. Position: 58.0</div></div></div></div></div></div></body></html>
