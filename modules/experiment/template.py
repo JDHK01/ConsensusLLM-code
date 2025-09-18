@@ -91,7 +91,7 @@ class Template(ABC):
         pass
 
     @abstractmethod
-    def _generate_agents(self, simulation_ind):
+    def _generate_agents(self, simulation_ind, random_agent: bool = False):
         """
         Generate a set of agents for a simulation.
 
@@ -165,7 +165,7 @@ class Template(ABC):
             simulation_ind: Index of the current simulation.
             progress: Progress bar for tracking the simulation's progress.
         """
-        agents = self._generate_agents(simulation_ind)
+        agents = self._generate_agents(simulation_ind, random_agent=True)
         try:
             for round in range(self._n_round):
                 results = queue.Queue()

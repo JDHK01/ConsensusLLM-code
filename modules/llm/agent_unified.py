@@ -43,7 +43,7 @@ class Agent(UnifiedLLM):
         temperature (float): 生成温度 (default: 0.7)
         system_message (str, optional): 系统消息
     """
-
+    # 这是为进行实验定制的智能体，存储了自己的位置和其他人的位置
     def __init__(self,
                  # 用于组建智能体的输入
                  position, other_position,
@@ -169,7 +169,7 @@ class Agent(UnifiedLLM):
         return self._other_position
 
     @other_position.setter
-    def position(self, value):
+    def other_position(self, value):
         self._other_position = value
 
     @property
@@ -263,6 +263,15 @@ class Agent(UnifiedLLM):
         self.reset_conversation(keep_system=keep_system)
         self._summarizer.reset_conversation(keep_system=True)
         self._summarize_result = ""
+
+    def get_history(self):
+        """
+        获取Agent的对话历史。
+
+        Returns:
+            list: 对话历史列表
+        """
+        return self.history
 
     def get_agent_info(self):
         """

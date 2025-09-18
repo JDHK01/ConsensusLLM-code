@@ -22,18 +22,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
 OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE, OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
-
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .template import Template
-from ..llm.agent import Agent
-from ..llm.api_key import api_keys
+from ..llm.agent_unified import Agent
+# from ..llm.api_key import api_keys
 from ..llm.role import names
 from ..prompt.scenario import agent_role, game_description, round_description
 from ..prompt.form import agent_output_form
 from ..prompt.personality import stubborn, suggestible
 from ..visual.gen_html import gen_html
 from ..visual.plot import plot_result
+
+from ..mine import *
 
 class ScalarDebate(Template):
     """
@@ -69,9 +70,9 @@ class ScalarDebate(Template):
         if args.n_stubborn + args.n_suggestible > self._n_agents:
             raise ValueError("stubborn + suggestible agents exceed "
                              f"total agents: {self._n_agents}")
-        if len(api_keys) < self._n_agents * args.n_exp:
-            raise ValueError("api_keys are not enough for "
-                             f"{self._n_agents} agents")
+        # if len(api_keys) < self._n_agents * args.n_exp:
+        #     raise ValueError("api_keys are not enough for "
+        #                      f"{self._n_agents} agents")
         if self._m.shape[0] != self._m.shape[1]:
             raise ValueError("connectivity_matrix is not a square matrix, "
                              f"shape: {self._m.shape}")
@@ -79,28 +80,65 @@ class ScalarDebate(Template):
             raise ValueError("connectivity_matrix size doesn't match the "
                              f"number of agents: {self._m.shape}")
 
-    def _generate_agents(self, simulation_ind):
+    def _generate_agents(self, simulation_ind, random_agent: bool = False):
         """
         Generate agent instances based on provided parameters.
 
         Args:
             simulation_ind: Index of the current simulation.
+            random_agent: If True, randomly select LLM providers
 
         Returns:
             List of generated agents.
         """
         agents = []
         position = np.random.randint(0, 100, size=self._n_agents)
+
         for idx in range(self._n_agents):
             position_others = position[self._m[idx, :]]
 
-            # Create agent instances
-            agent = Agent(position=position[idx],
-                          other_position=position_others,
-                          key=api_keys[simulation_ind * self._n_agents + idx],
-                          model="deepseek-chat",
-                          name=names[idx])
+            # 智能选择API key，避免索引超出范围
+            key_index = (simulation_ind * self._n_agents + idx) % len(tongyi_api_keys)
 
+            if not random_agent:
+                agent = Agent.create_tongyi_agent(
+                    position=position[idx],
+                    other_position=position_others,
+                    key=tongyi_api_keys[key_index],
+                    model="qwen-turbo",
+                    name=names[idx]
+                )
+            else:
+                # 随机模式：随机选择LLM提供商
+                provider_choice = np.random.randint(0, 2)
+
+                if provider_choice == 0:  # 通义千问
+                    key_index = (simulation_ind * self._n_agents + idx) % len(tongyi_api_keys)
+                    agent = Agent.create_tongyi_agent(
+                        position=position[idx],
+                        other_position=position_others,
+                        key=tongyi_api_keys[key_index],
+                        model="qwen-turbo",
+                        name=names[idx] + "(Tongyi)"
+                    )
+                elif provider_choice == 1:  # DeepSeek
+                    key_index = (simulation_ind * self._n_agents + idx) % len(deepseek_api_keys)
+                    agent = Agent.create_deepseek_agent(
+                        position=position[idx],
+                        other_position=position_others,
+                        key=deepseek_api_keys[key_index],
+                        model="deepseek-chat",
+                        name=names[idx] + "(DeepSeek)"
+                    )
+                else:  # Kimi
+                    key_index = (simulation_ind * self._n_agents + idx) % len(kimi_api_keys)
+                    agent = Agent.create_kimi_agent(
+                        position=position[idx],
+                        other_position=position_others,
+                        key=kimi_api_keys[key_index],
+                        model="moonshot-v1-8k",
+                        name=names[idx] + "(Kimi)"
+                    )
             # Add personality, neutral by default
             personality = ""
             if idx < self._n_stubborn:
@@ -136,7 +174,7 @@ class ScalarDebate(Template):
 
     def _exp_postprocess(self):
         """
-        Perform post-processing after the experiment, including saving 
+        Perform post-processing after the experiment, including saving
         records and generating plots.
         """
         is_success, filename = self.save_record(self._output_file)
@@ -171,3 +209,9 @@ class ScalarDebate(Template):
             agents: List of agents.
         """
         record[tuple(self._positions[simulation_ind])] = agent_contexts
+
+def main():
+    pass
+
+if __name__ == "__main__":
+    main()
